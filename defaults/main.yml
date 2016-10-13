@@ -9,6 +9,9 @@ sonar_version_directory: "sonarqube-{{ sonar_version }}"
 
 sonar_web_context: ''
 
+# Default: move - Values: move, copy, link
+sonar_install_method: "move"
+
 # MySQL database connection details.
 sonar_mysql_username: sonar
 sonar_mysql_password: sonar

@@ -29,6 +29,32 @@
   command: >
     mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
     creates=/usr/local/sonar/COPYING
+  when: sonar_install_method|lower == 'move'
+
+- name: Check /usr/local/sonar is a directory.
+  file:
+    path: /usr/local/sonar
+    state: directory
+  when: (sonar_install_method|lower == 'move' or sonar_install_method|lower == 'copy')
+
+- name: Copy Sonar into place.
+  shell: >
+    cp -r /usr/local/{{ sonar_version_directory }}/* /usr/local/sonar
+    creates=/usr/local/sonar/COPYING
+  when: sonar_install_method|lower == 'copy'
+
+- name: Clean the origin of the copy.
+  file:
+    path: /usr/local/{{ sonar_version_directory }}
+    state: absent
+  when: sonar_install_method|lower == 'copy'
+
+- name: Add sonar symlink to the installed version.
+  file:
+    src: /usr/local/{{ sonar_version_directory }}
+    dest: /usr/local/sonar
+    state: link
+  when: sonar_install_method|lower == 'link'
 
 - include: configure.yml
 

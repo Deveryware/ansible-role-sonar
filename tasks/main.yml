@@ -58,8 +58,11 @@
 - name: Ensure Sonar is running and set to start on boot.
   service: name=sonar state=started enabled=yes
 
-- name: Allow Sonar time to build on first start.
-  pause: seconds=180
+- name: Ensure Sonar is started.
+  wait_for:
+    path: /usr/local/sonar/logs/sonar.log
+    delay: 10
+    search_regex: 'app\[o\.s\.p\.m\.Monitor\] Process\[web\] is up'
   when: sonar_symlink.changed
   tags: ['skip_ansible_lint']
 

@@ -12,7 +12,7 @@
     password: "{{ sonar_mysql_password }}"
   with_items: "{{ sonar_mysql_allowed_hosts }}"
 
-- name: Ensure Sonar application is in the requested version.
+- name: Ensure Sonar application is already in the requested version.
   stat:
     path: "/usr/local/sonar/lib/sonar-application-{{ sonar_version }}.jar"
   register: sonar_application_version
@@ -30,6 +30,13 @@
       dest: /usr/local/
       copy: no
       creates: "/usr/local/{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
+
+  - name: Ensure Sonar application is not already installed in another version.
+    find:
+      path: "/usr/local/sonar/lib/"
+      patterns: "sonar-application-*.jar"
+      file_type: file
+    register: sonar_application_other_version
 
   # ymallint disable-line rule:ANSIBLE0013
   - name: Move Sonar into place.

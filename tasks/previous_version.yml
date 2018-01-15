@@ -1,0 +1,14 @@
+---
+- set_fact:
+    sonar_previous_version: "{{ sonar_application_other_version.files[0].path | regex_replace('^/usr/local/sonar/lib/sonar-application-(.*).jar$', '\\1') }}"
+
+- name: Ensure Sonar is stopped.
+  service:
+    name: sonar
+    state: stopped
+
+- name: Move previous version {{ sonar_previous_version }} appart.
+  shell: >
+    mv /usr/local/sonar /usr/local/sonar-{{ sonar_previous_version }}
+    creates=/usr/local/sonar-{{ sonar_previous_version }}/lib/sonar-application-{{ sonar_previous_version }}.jar
+

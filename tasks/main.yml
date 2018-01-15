@@ -38,6 +38,9 @@
       file_type: file
     register: sonar_application_other_version
 
+  - include: previous_version.yml
+    when: sonar_application_other_version.matched
+
   # ymallint disable-line rule:ANSIBLE0013
   - name: Move Sonar into place.
     shell: >

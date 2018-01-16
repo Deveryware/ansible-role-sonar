@@ -7,8 +7,14 @@
     name: sonar
     state: stopped
 
-- name: Move previous version {{ sonar_previous_version }} appart.
+- name: Ensure previous version {{ sonar_previous_version }} is deleted.
+  file:
+    path: '/usr/local/sonar/'
+    state : absent
+  when: not sonar_previous_version_backup
+
+- name: Ensure previous version {{ sonar_previous_version }} is moved apart.
   shell: >
     mv /usr/local/sonar /usr/local/sonar-{{ sonar_previous_version }}
     creates=/usr/local/sonar-{{ sonar_previous_version }}/lib/sonar-application-{{ sonar_previous_version }}.jar
-
+  when: sonar_previous_version_backup

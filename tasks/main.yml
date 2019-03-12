@@ -28,7 +28,7 @@
       unarchive:
         src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
         dest: /usr/local/
-        copy: no
+        copy: false
         creates: "/usr/local/{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
 
     - name: Ensure Sonar application is not already installed in another version.

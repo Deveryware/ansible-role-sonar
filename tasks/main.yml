@@ -18,34 +18,34 @@
   register: sonar_application_version
 
 - block:
-  - name: Download Sonar.
-    get_url:
-      url: "{{ sonar_download_url }}"
-      dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
-      validate_certs: "{{ sonar_download_validate_certs }}"
+    - name: Download Sonar.
+      get_url:
+        url: "{{ sonar_download_url }}"
+        dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+        validate_certs: "{{ sonar_download_validate_certs }}"
 
-  - name: Unzip Sonar.
-    unarchive:
-      src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
-      dest: /usr/local/
-      copy: no
-      creates: "/usr/local/{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
+    - name: Unzip Sonar.
+      unarchive:
+        src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+        dest: /usr/local/
+        copy: no
+        creates: "/usr/local/{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
 
-  - name: Ensure Sonar application is not already installed in another version.
-    find:
-      path: "/usr/local/sonar/lib/"
-      patterns: "sonar-application-*.jar"
-      file_type: file
-    register: sonar_application_other_version
+    - name: Ensure Sonar application is not already installed in another version.
+      find:
+        path: "/usr/local/sonar/lib/"
+        patterns: "sonar-application-*.jar"
+        file_type: file
+      register: sonar_application_other_version
 
-  - include: previous_version.yml
-    when: sonar_application_other_version.matched
+    - include: previous_version.yml
+      when: sonar_application_other_version.matched
 
-  # ymallint disable-line rule:ANSIBLE0013
-  - name: Move Sonar into place.
-    shell: >
-      mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
-      creates=/usr/local/sonar/lib/sonar-application-{{ sonar_version }}.jar
+    # ymallint disable-line rule:ANSIBLE0013
+    - name: Move Sonar into place.
+      shell: >
+        mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
+        creates=/usr/local/sonar/lib/sonar-application-{{ sonar_version }}.jar
 
   when: not sonar_application_version.stat.exists
 

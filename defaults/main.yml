@@ -22,4 +22,4 @@ sonar_mysql_allowed_hosts:
   - "::1"
   - "localhost"
 
-sonar_previous_version_backup: False
+sonar_previous_version_backup: false

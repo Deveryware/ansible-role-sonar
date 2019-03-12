@@ -25,6 +25,7 @@
     copy: false
     creates: /usr/local/sonar/COPYING
 
+# ymallint disable-line rule:ANSIBLE0013
 - name: Move Sonar into place.
   command: >
     mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar

@@ -124,6 +124,11 @@
     mode: 0755
   when: "ansible_service_mgr == 'systemd'"
 
+- name: Ensure vm.max_map_count is set according to ElasticSearch's preference.
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+
 - name: Ensure Sonar is running and set to start on boot.
   service: name=sonar state=started enabled=yes
 

@@ -66,14 +66,22 @@ Change Sonar default group.
 
 ## Dependencies
 
-  - geerlingguy.java
-  - geerlingguy.mysql
+A role dedicated to the configuration of either mysql or postgresql, such as:
+
+- [geerlingguy/ansible-role-mysql](https://github.com/geerlingguy/ansible-role-mysql)
+- [ANXS/postgresql](https://github.com/ANXS/postgresql)
+
+A role dedicated to the configuration of java, such as:
+
+- [geerlingguy/ansible-role-java](https://github.com/geerlingguy/ansible-role-java)
 
 ## Example Playbook
 
     - hosts: all
       roles:
-        - geerlingguy.sonar
+        - ansible-role-mysql
+        - ansible-role-java
+        - ansible-role-sonar
 
 Using the defaults, you can view the SonarQube home at `http://localhost:9000/` (default System administrator credentials are `admin`/`admin`).
 

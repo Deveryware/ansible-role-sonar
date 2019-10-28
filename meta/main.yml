@@ -1,8 +1,4 @@
 ---
-dependencies:
-  - geerlingguy.java
-  - geerlingguy.mysql
-
 galaxy_info:
   author: geerlingguy
   description: SonarQube for Linux

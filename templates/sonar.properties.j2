@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+{% for firstlevel in sonar_configuration %}
+{% for secondlevel in sonar_configuration[firstlevel] %}
+{% if sonar_configuration[firstlevel][secondlevel] is mapping %}
+{% for thirdlevel in sonar_configuration[firstlevel][secondlevel] %}
+{{ firstlevel }}.{{ secondlevel }}.{{ thirdlevel }}={{ sonar_configuration[firstlevel][secondlevel][thirdlevel] }}
+{% endfor %}
+{% else %}
+{{ firstlevel }}.{{ secondlevel }}={{ sonar_configuration[firstlevel][secondlevel] }}
+{% endif %}
+{% endfor %}
+{% endfor %}

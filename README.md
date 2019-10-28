@@ -30,32 +30,14 @@ Controls whether to validate certificates when downloading SonarQube.
 
 The URL from which SonarQube will be downloaded, and the resulting directory name (should match the download archive, without the archive extension).
 
-    sonar_web_context: ''
-
-The value of `sonar.web.context`. Setting this to something like `/sonar` allows you to set the context where Sonar can be accessed (e.g. `hostname/sonar` instead of `hostname`).
-
-    sonar_mysql_username: sonar
-    sonar_mysql_password: sonar
-    
-    sonar_mysql_host: localhost
-    sonar_mysql_port: "3306"
-    sonar_mysql_database: sonar
-    
-    sonar_mysql_allowed_hosts:
-      - 127.0.0.1
-      - ::1
-      - localhost
-
-JDBC settings for a connection to a MySQL database. Defaults presume the database resides on localhost and is only accessible on the SonarQube server itself.
-
     sonar_install_method: "move"
 
 The way you want the install to be done. By default **move** is a rename of the versionned directory into _sonar_. You can set to **link** to create a symlink _sonar_ targeting the versionned directory. You can set to **copy** to copy the versionned directory into _sonar_ and remove the versionned directory (use case: dedicated filesystem).
 
     sonar_previous_version_backup: False
 
+Wether to remove or not the previous version after an upgrade.
 
-=======
     sonar_user: sonar
 
 Change Sonar default user.
@@ -63,6 +45,40 @@ Change Sonar default user.
     sonar_group: sonar
 
 Change Sonar default group.
+
+    sonar_configuration:
+      sonar:
+        host: 0.0.0.0
+        port: 9000
+      jdbc:
+        url: "jdbc:mysql://localhost:3306/sonar"
+
+A flexible yaml document representing SonarQube configuration.
+It is possible to configure the ldap plugin, http proxy, and much more.
+
+Example:
+
+    sonar_configuration:
+      sonar:
+        host: 0.0.0.0
+        port: 9000
+	context: /sonar
+      jdbc:
+        username: sonar
+	password: "{{ vaulted_password }}"
+        url: "jdbc:mysql://localhost:3306/sonar"
+      ce:
+        javaAdditionalOpts: -javaagent:...
+      security:
+        realm: LDAP
+      ldap:
+        url: "{{ ldap_url }}"
+	bindDn: "{{ bind_dn }}"
+	bindPassword: "{{ vaulted_bind_password }}"
+	...
+      http:
+        proxyHost: "{{ proxy_host }}"
+        proxyPort: "{{ proxy_port }}"
 
 ## Dependencies
 

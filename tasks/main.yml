@@ -25,10 +25,37 @@
     copy: false
     creates: /usr/local/sonar/COPYING
 
+# ymallint disable-line rule:ANSIBLE0013
 - name: Move Sonar into place.
   command: >
     mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
     creates=/usr/local/sonar/COPYING
+  when: sonar_install_method == 'move'
+
+- name: Check /usr/local/sonar is a directory.
+  file:
+    path: /usr/local/sonar
+    state: directory
+  when: (sonar_install_method == 'move' or sonar_install_method == 'copy')
+
+- name: Copy Sonar into place.
+  shell: >
+    cp -r /usr/local/{{ sonar_version_directory }}/* /usr/local/sonar
+    creates=/usr/local/sonar/COPYING
+  when: sonar_install_method == 'copy'
+
+- name: Clean the origin of the copy.
+  file:
+    path: /usr/local/{{ sonar_version_directory }}
+    state: absent
+  when: sonar_install_method == 'copy'
+
+- name: Add sonar symlink to the installed version.
+  file:
+    src: /usr/local/{{ sonar_version_directory }}
+    dest: /usr/local/sonar
+    state: link
+  when: sonar_install_method == 'link'
 
 - include: configure.yml
 

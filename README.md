@@ -52,6 +52,14 @@ JDBC settings for a connection to a MySQL database. Defaults presume the databas
 
 The way you want the install to be done. By default **move** is a rename of the versionned directory into _sonar_. You can set to **link** to create a symlink _sonar_ targeting the versionned directory. You can set to **copy** to copy the versionned directory into _sonar_ and remove the versionned directory (use case: dedicated filesystem).
 
+    sonar_user: sonar
+
+Change Sonar default user.
+
+    sonar_group: sonar
+
+Change Sonar default group.
+
 ## Dependencies
 
   - geerlingguy.java

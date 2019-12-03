@@ -7,6 +7,8 @@ sonar_version: 4.5.6
 sonar_download_url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip"
 sonar_version_directory: "sonarqube-{{ sonar_version }}"
 
+sonar_user: sonar
+sonar_group: "{{ sonar_user }}"
 sonar_web_context: ''
 
 # Default: move - Values: move, copy, link

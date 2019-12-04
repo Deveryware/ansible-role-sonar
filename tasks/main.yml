@@ -130,7 +130,7 @@
   wait_for:
     path: /usr/local/sonar/logs/sonar.log
     delay: 10
-    search_regex: 'app\[o\.s\.p\.m\.Monitor\] Process\[web\] is up'
+    search_regex: 'Process\[web\] is up'
   when: sonar_symlink.changed
   tags: ['skip_ansible_lint']
 

@@ -1,103 +1,139 @@
 # Ansible Role: SonarQube
 
-[![Build Status](https://travis-ci.org/geerlingguy/ansible-role-sonar.svg?branch=master)](https://travis-ci.org/geerlingguy/ansible-role-sonar)
-
 An Ansible Role that installs [SonarQube](http://www.sonarqube.org/) on RedHat/CentOS and Debian/Ubuntu Linux servers.
 
 ## Requirements
 
 Requires the `unzip` utility to be installed on the server. Also, different SonarQube versions require different minimum versions of Java:
 
-  - SonarQube 5.0-5.5 requires Java 1.7+
-  - SonarQube 5.6+ requires Java 1.8+
+  - SonarQube 5.0-5.5 requires Java 7+
+  - SonarQube 5.6-7.8 requires Java 8+
+  - SonarQube 7.9+ requires Java 11+
 
-Finally, recent versions of SonarQube also require MySQL 5.6 or later.
+Same thing for databases versions:
+
+  - SonarQube 6.7-7.2 requires MySQL 5.6+ or PostgreSQL 8+
+  - SonarQube 7.3-7.8 requires MySQL 5.6+ or PostgreSQL 9.3+
+  - SonarQube 7.9 dropped support for MySQL entirely
 
 ## Role Variables
 
-Available variables are listed below, along with default values:
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `sonar_configuration` | See below | ... |
+| `sonar_download_url` | Source for SonarQube releases | `https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip` |
+| `sonar_download_validate_certs` | Validate certificates for `sonar_download_url` | `true` |
+| `sonar_group` | UNIX sonar group | `sonar` |
+| `sonar_install_method` | See below | `move` |
+| `sonar_previous_version_backup` | Keep previous SonarQube version after upgrade | `false` |
+| `sonar_user` | UNIX sonar user | `sonar` |
+| `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
+| `sonar_version` | SonarQube version to install | `7.9` |
+| `workspace` | Temporary storage area for downloaded files | `/root` |
 
-    workspace: /root
+### sonar_install_method
 
-Directory where downloaded files will be temporarily stored.
+This variable dictate how the files from a new release are installed in the destination folder `/usr/local/sonar`.
 
-    sonar_download_validate_certs: true
+First they are extracted to `/usr/local/{{ sonar_version_directory }}`.
 
-Controls whether to validate certificates when downloading SonarQube.
+Then, if `sonar_install_method=copy` the files are recursively copied to the destination folder and the source folder is supsequently removed.
 
-    sonar_download_url: http://dist.sonar.codehaus.org/sonarqube-4.5.4.zip
-    sonar_version_directory: sonarqube-4.5.4
+Otherwise if `sonar_install_method=move` the source folder is renamed to the destination folder using the command `mv`.
 
-The URL from which SonarQube will be downloaded, and the resulting directory name (should match the download archive, without the archive extension).
+The last possibility is `sonar_install_method=link` where the source folder is symlinked to the destination folder.
 
-    sonar_install_method: "move"
+### sonar_configuration
 
-The way you want the install to be done. By default **move** is a rename of the versionned directory into _sonar_. You can set to **link** to create a symlink _sonar_ targeting the versionned directory. You can set to **copy** to copy the versionned directory into _sonar_ and remove the versionned directory (use case: dedicated filesystem).
-
-    sonar_previous_version_backup: False
-
-Wether to remove or not the previous version after an upgrade.
-
-    sonar_user: sonar
-
-Change Sonar default user.
-
-    sonar_group: sonar
-
-Change Sonar default group.
-
-    sonar_configuration:
-      sonar:
-        host: 0.0.0.0
-        port: 9000
-      jdbc:
-        url: "jdbc:mysql://localhost:3306/sonar"
-
-A flexible yaml document representing SonarQube configuration.
-It is possible to configure the ldap plugin, http proxy, and much more.
+Yaml representation of SonarQube configuration.
 
 Example:
 
-    sonar_configuration:
-      sonar:
-        host: 0.0.0.0
-        port: 9000
-	context: /sonar
-      jdbc:
-        username: sonar
-	password: "{{ vaulted_password }}"
-        url: "jdbc:mysql://localhost:3306/sonar"
-      ce:
-        javaAdditionalOpts: -javaagent:...
-      security:
-        realm: LDAP
-      ldap:
-        url: "{{ ldap_url }}"
-	bindDn: "{{ bind_dn }}"
-	bindPassword: "{{ vaulted_bind_password }}"
-	...
-      http:
-        proxyHost: "{{ proxy_host }}"
-        proxyPort: "{{ proxy_port }}"
+```yaml
+sonar_configuration:
+  sonar:
+    web:
+      host: 0.0.0.0
+      port: 9000
+    jdbc:
+      url: "jdbc:mysql://localhost:3306/sonar"
+```
+
+Translates to:
+
+    sonar.web.host=0.0.0.0
+    sonar.web.port=9000
+    sonar.jdbc.url=jdbc:mysql://localhost:3306/sonar
+
+This way it is possible to configure LDAP, HTTP proxies, MySQL, PostgreSQL, and more.
+
+Example:
+
+```yaml
+sonar_configuration:
+  sonar:
+    web:
+      host: 0.0.0.0
+      port: 9000
+      context: /sonar
+    jdbc:
+      username: sonar
+      password: "{{ vaulted_password }}"
+      url: "jdbc:mysql://localhost:3306/sonar"
+    ce:
+      javaAdditionalOpts: -javaagent:...
+    security:
+      realm: LDAP
+  ldap:
+    url: "{{ ldap_url }}"
+    bindDn: "{{ bind_dn }}"
+    bindPassword: "{{ vaulted_bind_password }}"
+    user:
+      baseDn: ou=Users,dc=example,dc=org
+      realNameAttribute: cn
+      emailAttribute: mail
+    group:
+      request: (&(objectClass=posixGroup)(memberUid={uid}))
+  http:
+    proxyHost: "{{ proxy_host }}"
+    proxyPort: "{{ proxy_port }}"
+  https:
+    proxyHost: "{{ proxy_host }}"
+    proxyPort: "{{ proxy_port }}"
+```
 
 ## Dependencies
 
 A role dedicated to the configuration of either mysql or postgresql, such as:
 
 - [geerlingguy/ansible-role-mysql](https://github.com/geerlingguy/ansible-role-mysql)
+- [geerlingguy/ansible-role-postgresql](https://github.com/geerlingguy/ansible-role-postgresql)
 - [ANXS/postgresql](https://github.com/ANXS/postgresql)
 
 A role dedicated to the configuration of java, such as:
 
 - [geerlingguy/ansible-role-java](https://github.com/geerlingguy/ansible-role-java)
 
-## Example Playbook
+## Example Playbooks
 
-    - hosts: all
-      roles:
-        - ansible-role-mysql
-        - ansible-role-java
-        - ansible-role-sonar
+```yaml
+- hosts: all
+  roles:
+    - ansible-role-mysql
+    - ansible-role-java
+    - ansible-role-sonar
+      sonar_version: 7.7
+```
+
+or
+
+```yaml
+- hosts: all
+  roles:
+    - ansible-role-postgresql
+    - ansible-role-java
+    - ansible-role-sonar
+```
 
 Using the defaults, you can view the SonarQube home at `http://localhost:9000/` (default System administrator credentials are `admin`/`admin`).
 

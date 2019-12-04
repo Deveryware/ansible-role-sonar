@@ -94,6 +94,13 @@
     line: '\1={{ sonar_user }}'
     backrefs: yes
 
+- name: Ensure ownership of SonarQube objects.
+  file:
+    path: /usr/local/sonar
+    owner: "{{ sonar_user }}"
+    group: "{{ sonar_group }}"
+    recurse: true
+
 - name: Symlink sonar bin.
   file:
     src: /usr/local/sonar/bin/linux-x86-64/sonar.sh

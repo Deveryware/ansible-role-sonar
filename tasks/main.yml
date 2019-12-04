@@ -12,55 +12,67 @@
     password: "{{ sonar_mysql_password }}"
   with_items: "{{ sonar_mysql_allowed_hosts }}"
 
-- name: Verify Sonar installation.
-  stat: path=/usr/local/sonar/bin/linux-x86-64/sonar.sh
-  register: sonar_installed
+- name: Ensure Sonar application is already in the requested version.
+  stat:
+    path: "/usr/local/sonar/lib/sonar-application-{{ sonar_version }}.jar"
+  register: sonar_application_version
 
-- name: Download Sonar.
-  get_url:
-    url: "{{ sonar_download_url }}"
-    dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
-    validate_certs: "{{ sonar_download_validate_certs }}"
-  when: sonar_installed.stat.exists == False
+- block:
+    - name: Download Sonar.
+      get_url:
+        url: "{{ sonar_download_url }}"
+        dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+        validate_certs: "{{ sonar_download_validate_certs }}"
 
-- name: Unzip Sonar.
-  unarchive:
-    src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
-    dest: /usr/local/
-    copy: false
-    creates: /usr/local/sonar/COPYING
+    - name: Unzip Sonar.
+      unarchive:
+        src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+        dest: /usr/local/
+        copy: false
+        creates: "/usr/local/{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
 
-# ymallint disable-line rule:ANSIBLE0013
-- name: Move Sonar into place.
-  command: >
-    mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
-    creates=/usr/local/sonar/COPYING
-  when: sonar_install_method == 'move'
+    - name: Ensure Sonar application is not already installed in another version.
+      find:
+        path: "/usr/local/sonar/lib/"
+        patterns: "sonar-application-*.jar"
+        file_type: file
+      register: sonar_application_other_version
 
-- name: Check /usr/local/sonar is a directory.
-  file:
-    path: /usr/local/sonar
-    state: directory
-  when: (sonar_install_method == 'move' or sonar_install_method == 'copy')
+    - include: previous_version.yml
+      when: sonar_application_other_version.matched
 
-- name: Copy Sonar into place.
-  shell: >
-    cp -r /usr/local/{{ sonar_version_directory }}/* /usr/local/sonar
-    creates=/usr/local/sonar/COPYING
-  when: sonar_install_method == 'copy'
+    - name: Move Sonar into place.
+      command: >
+        mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
+        creates=/usr/local/sonar/COPYING
+      when: sonar_install_method == 'move'
 
-- name: Clean the origin of the copy.
-  file:
-    path: /usr/local/{{ sonar_version_directory }}
-    state: absent
-  when: sonar_install_method == 'copy'
+    - name: Check /usr/local/sonar is a directory.
+      file:
+        path: /usr/local/sonar
+        state: directory
+      when: (sonar_install_method == 'move' or sonar_install_method == 'copy')
 
-- name: Add sonar symlink to the installed version.
-  file:
-    src: /usr/local/{{ sonar_version_directory }}
-    dest: /usr/local/sonar
-    state: link
-  when: sonar_install_method == 'link'
+    - name: Copy Sonar into place.
+      shell: >
+        cp -r /usr/local/{{ sonar_version_directory }}/* /usr/local/sonar
+        creates=/usr/local/sonar/COPYING
+      when: sonar_install_method == 'copy'
+
+    - name: Clean the origin of the copy.
+      file:
+        path: /usr/local/{{ sonar_version_directory }}
+        state: absent
+      when: sonar_install_method == 'copy'
+
+    - name: Add sonar symlink to the installed version.
+      file:
+        src: /usr/local/{{ sonar_version_directory }}
+        dest: /usr/local/sonar
+        state: link
+      when: sonar_install_method == 'link'
+
+  when: not sonar_application_version.stat.exists
 
 - include: configure.yml
 

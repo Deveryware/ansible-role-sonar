@@ -9,22 +9,15 @@ sonar_version_directory: "sonarqube-{{ sonar_version }}"
 
 sonar_user: sonar
 sonar_group: "{{ sonar_user }}"
-sonar_web_context: ''
 
 # Default: move - Values: move, copy, link
 sonar_install_method: "move"
 
-# MySQL database connection details.
-sonar_mysql_username: sonar
-sonar_mysql_password: sonar
-
-sonar_mysql_host: localhost
-sonar_mysql_port: "3306"
-sonar_mysql_database: sonar
-
-sonar_mysql_allowed_hosts:
-  - "127.0.0.1"
-  - "::1"
-  - "localhost"
+sonar_configuration:
+  sonar:
+    host: 0.0.0.0
+    port: 9000
+  jdbc:
+    url: "jdbc:mysql://localhost:3306/sonar"
 
 sonar_previous_version_backup: false

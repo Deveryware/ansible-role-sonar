@@ -1,4 +1,15 @@
 ---
+- name: Ensure sonar group is created.
+  group:
+    name: "{{ sonar_group }}"
+
+- name: Ensure sonar user is created.
+  user:
+    name: "{{ sonar_user }}"
+    group: "{{ sonar_group }}"
+    createhome: false
+    home: /usr/local/sonar
+
 - name: Create a database for Sonar.
   mysql_db:
     name: "{{ sonar_mysql_database }}"
@@ -75,6 +86,13 @@
   when: not sonar_application_version.stat.exists
 
 - include: configure.yml
+
+- name: Ensure sonar doesn't run as root.
+  lineinfile:
+    path: "/usr/local/sonar/bin/linux-x86-64/sonar.sh"
+    regexp: '^#(RUN_AS_USER)='
+    line: '\1={{ sonar_user }}'
+    backrefs: yes
 
 - name: Symlink sonar bin.
   file:

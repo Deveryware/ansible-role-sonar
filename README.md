@@ -54,7 +54,15 @@ The way you want the install to be done. By default **move** is a rename of the 
 
     sonar_previous_version_backup: False
 
-Turn into True if you want to backup the previous version when upgrading.
+
+=======
+    sonar_user: sonar
+
+Change Sonar default user.
+
+    sonar_group: sonar
+
+Change Sonar default group.
 
 ## Dependencies
 

@@ -4,6 +4,7 @@ After=network.target network-online.target
 Wants=network-online.target
 
 [Service]
+User={{ sonar_user }}
 ExecStart=/usr/bin/sonar start
 ExecStop=/usr/bin/sonar stop
 ExecReload=/usr/bin/sonar restart

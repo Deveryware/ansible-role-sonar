@@ -20,12 +20,15 @@ Same thing for databases versions:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `sonar_community_plugins` | List of community plugins to install. See below | `[]` |
 | `sonar_configuration` | See below | ... |
 | `sonar_download_url` | Source for SonarQube releases | `https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip` |
 | `sonar_download_validate_certs` | Validate certificates for `sonar_download_url` | `true` |
 | `sonar_group` | UNIX sonar group | `sonar` |
 | `sonar_install_method` | See below | `move` |
+| `sonar_plugins` | List of official plugins to intsall. See below | `[]` |
 | `sonar_previous_version_backup` | Keep previous SonarQube version after upgrade | `false` |
+| `sonar_token` | Sonar security token, used to install plugins | `""` |
 | `sonar_user` | UNIX sonar user | `sonar` |
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
 | `sonar_version` | SonarQube version to install | `7.9` |
@@ -101,6 +104,52 @@ sonar_configuration:
     proxyHost: "{{ proxy_host }}"
     proxyPort: "{{ proxy_port }}"
 ```
+
+### sonar_plugins
+
+This variable is a list of dict describing a particular plugin:
+
+| Key | Description | Mandatory? |
+|-----|-------------|------------|
+| name | Plugin name | yes |
+| state | Either `absent` or `present` | no |
+
+It is mandatory to define a security token for an administrator account in the variable `sonar_token` for this functionality to work.
+
+Example:
+
+```yaml
+sonar_plugins:
+- name: Git
+- name: SonarPython
+- name: Svn
+  state: absent
+- name: Cvs
+  state: absent
+```
+
+### sonar_community_plugins
+
+This variable is a list of dict describing a particular plugin from the community:
+
+| Key | Description | Mandatory? |
+|-----|-------------|------------|
+| name | Plugin name | yes |
+| url | An URL pointing to jar | yes |
+| state | Either `absent` or `present` | no |
+
+Example:
+
+```yaml
+sonar_community_plugins:
+- name: backelite-sonar-swift
+  url: https://.../backelite-sonar-swift-plugin-0.4.5.jar
+- name: sonar-bad
+  url: https://.../sonar-bad-0.4.2.jar
+  state: absent
+```
+
+Note that the key `url` is mandatory, even when `state=absent`.
 
 ## Dependencies
 

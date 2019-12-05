@@ -12,6 +12,9 @@ sonar_group: "{{ sonar_user }}"
 
 # Default: move - Values: move, copy, link
 sonar_install_method: "move"
+sonar_token: ""
+sonar_plugins: []
+sonar_community_plugins: []
 
 sonar_configuration:
   sonar:

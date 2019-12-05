@@ -8,7 +8,6 @@
     name: "{{ sonar_user }}"
     group: "{{ sonar_group }}"
     createhome: false
-    home: /usr/local/sonar
 
 - name: Ensure Sonar application is already in the requested version.
   stat:

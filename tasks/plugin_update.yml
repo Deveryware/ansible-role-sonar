@@ -1,0 +1,11 @@
+---
+- name: Ensure {{ plugin.name }} is updated.
+  command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ __sonar_api_base_url }}/plugins/update"
+  args:
+    warn: false
+  loop: "{{ plugin['updates'] }}"
+  loop_control:
+    loop_var: update
+    label: "{{ update['release']['version'] }}"
+  when: "'COMPATIBLE' == update['status']"
+  notify: restart sonar

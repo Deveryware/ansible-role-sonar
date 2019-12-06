@@ -1,0 +1,119 @@
+---
+- name: Ensure plugins folder exists.
+  file:
+    path: /usr/local/sonar/extensions/plugins
+    state: directory
+
+- set_fact:
+    __sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/api"
+
+#
+# The uri module did not work for any of these usecases when testing with
+# ansible 2.8.1
+#
+
+- name: Official plugins.
+  block:
+
+  - name: Get the list of installed plugins.
+    command: "curl -s -u {{ sonar_token }}: {{ __sonar_api_base_url }}/plugins/installed"
+    args:
+      warn: false
+    register: installed
+    changed_when: false
+
+  - set_fact:
+      installed: "{{ installed.stdout | from_json }}"
+
+  - name: Ensure unwanted plugins are removed.
+    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ __sonar_api_base_url }}/plugins/uninstall"
+    args:
+      warn: false
+    loop: "{{ installed['plugins'] }}"
+    loop_control:
+      loop_var: plugin
+      label: "{{ plugin.name }}"
+    when:
+    - "plugin.name in sonar_plugins | json_query('[?state == `absent`].name')"
+    notify: restart sonar
+
+  # Apparently doesn't include already installed plugins, which is neat.
+  - name: Get the list of available plugins.
+    command: "curl -s -u {{ sonar_token }}: {{ __sonar_api_base_url }}/plugins/available"
+    args:
+      warn: false
+    register: available
+    changed_when: false
+
+  - set_fact:
+      available: "{{ available.stdout | from_json }}"
+
+  # Beware the monster task
+  - name: Ensure plugins are installed.
+    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ __sonar_api_base_url }}/plugins/install"
+    args:
+      warn: false
+    register: result
+    changed_when: "'is already installed' not in result.stdout"
+    notify: restart sonar
+    loop: "{{ available['plugins'] }}"
+    loop_control:
+      loop_var: plugin
+      label: "{{ plugin.name }}"
+    when:
+    - "plugin.name in sonar_plugins | json_query('[?state != `absent`].name')"
+
+  - name: Get the list of plugins needing an update.
+    command: "curl -s -u {{ sonar_token }}: {{ __sonar_api_base_url }}/plugins/updates"
+    args:
+      warn: false
+    register: updates
+    changed_when: false
+
+  - set_fact:
+      updates: "{{ updates.stdout | from_json }}"
+
+  - include_tasks: plugin_update.yml
+    loop: "{{ updates['plugins'] }}"
+    loop_control:
+      loop_var: plugin
+      label: "{{ plugin.name }}"
+
+  # Do not try to call the API after an upgrade as it won't be available
+  when:
+    - sonar_token
+    - sonar_application_version.stat.exists
+
+- name: Verify the status of community plugins.
+  stat:
+    path: "/usr/local/sonar/extensions/plugins/{{ plugin.url | urlsplit('path') | basename }}"
+  loop: "{{ sonar_community_plugins }}"
+  loop_control:
+    loop_var: plugin
+    label: "{{ plugin.name }}"
+  register: community_plugins
+
+- name: Remove unwanted community plugin.
+  file:
+    path: "/usr/local/sonar/extensions/plugins/{{ plugin.url | urlsplit('path') | basename }}"
+    state: absent
+  when:
+  - "plugin.state is defined"
+  - "plugin.state == 'absent'"
+  loop: "{{ sonar_community_plugins }}"
+  loop_control:
+    loop_var: plugin
+    label: "{{ plugin.name }}"
+  notify: restart sonar
+
+- name: Download community plugin.
+  get_url:
+    url: "{{ item['plugin']['url'] }}"
+    dest: /usr/local/sonar/extensions/plugins/
+  when:
+  - "not item['stat']['exists']"
+  - "(item['plugin']['state'] is not defined or (item['plugin']['state'] is defined and item['plugin']['state'] != 'absent'))"
+  loop: "{{ community_plugins.results }}"
+  loop_control:
+    label: "{{ item['plugin']['name'] }}"
+  notify: restart sonar

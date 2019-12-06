@@ -122,6 +122,8 @@
     mode: 0600
   notify: restart sonar
 
+- include: plugins.yml
+
 - name: Ensure Sonar is running and set to start on boot.
   service: name=sonar state=started enabled=yes
 

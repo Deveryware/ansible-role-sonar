@@ -25,9 +25,8 @@ Same thing for databases versions:
 | `sonar_download_url` | Source for SonarQube releases | `https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip` |
 | `sonar_download_validate_certs` | Validate certificates for `sonar_download_url` | `true` |
 | `sonar_group` | UNIX sonar group | `sonar` |
-| `sonar_install_method` | See below | `move` |
+| `sonar_install_method` | See below | `copy` |
 | `sonar_plugins` | List of official plugins to intsall. See below | `[]` |
-| `sonar_previous_version_backup` | Keep previous SonarQube version after upgrade | `false` |
 | `sonar_token` | Sonar security token, used to install plugins | `""` |
 | `sonar_user` | UNIX sonar user | `sonar` |
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
@@ -40,11 +39,9 @@ This variable dictate how the files from a new release are installed in the dest
 
 First they are extracted to `/usr/local/{{ sonar_version_directory }}`.
 
-Then, if `sonar_install_method=copy` the files are recursively copied to the destination folder and the source folder is supsequently removed.
+Then, if `sonar_install_method=copy` the source folder is recursively copied into the destination folder using the module `copy`.
 
-Otherwise if `sonar_install_method=move` the source folder is renamed to the destination folder using the command `mv`.
-
-The last possibility is `sonar_install_method=link` where the source folder is symlinked to the destination folder.
+The other possibility is `sonar_install_method=link` where the source folder is symlinked to the destination folder, preserving any previously installed version.
 
 ### sonar_configuration
 

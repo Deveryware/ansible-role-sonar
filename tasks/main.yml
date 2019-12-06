@@ -6,7 +6,7 @@
 - name: Ensure sonar user is created.
   user:
     name: "{{ sonar_user }}"
-    group: "{{ sonar_group }}"
+    group: "{{ sonar_group }}"
     createhome: false
 
 - name: Ensure Sonar application is already in the requested version.
@@ -118,7 +118,7 @@
     src: sonar.properties.j2
     dest: /usr/local/sonar/conf/sonar.properties
     owner: "{{ sonar_user }}"
-    group: "{{ sonar_group }}"
+    group: "{{ sonar_group }}"
     mode: 0600
   notify: restart sonar
 

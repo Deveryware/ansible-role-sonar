@@ -4,9 +4,6 @@
     path: /usr/local/sonar/extensions/plugins
     state: directory
 
-- set_fact:
-    __sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/api"
-
 #
 # The uri module did not work for any of these usecases when testing with
 # ansible 2.8.1

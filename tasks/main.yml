@@ -140,6 +140,7 @@
     group: root
     mode: 0755
   when: "ansible_service_mgr == 'systemd'"
+  notify: Reload systemd
 
 - name: Ensure vm.max_map_count is set according to ElasticSearch's preference.
   sysctl:

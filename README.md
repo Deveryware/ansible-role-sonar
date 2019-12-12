@@ -190,3 +190,4 @@ MIT / BSD
 ## Author Information
 
 This role was created in 2014 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+It was forked in 2019 by [Tristan Le Guern](https://www.bouledef.eu/~tleguern) and [Olivier Locard](https://github.com/olo-dw) on behalf of [Deveryware](https://deveryware.com).

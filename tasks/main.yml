@@ -1,4 +1,9 @@
 ---
+- assert:
+    that:
+      - sonar_install_method == "link" or sonar_install_method == "copy"
+    fail_msg: "'sonar_install_method' should be either 'copy' or 'link', not '{{ sonar_install_method }}'"
+
 - name: Ensure sonar group is created.
   group:
     name: "{{ sonar_group }}"
@@ -35,38 +40,73 @@
         file_type: file
       register: sonar_application_other_version
 
-    - include: previous_version.yml
+    - name: Stop Sonar for the upgrade
+      service:
+        name: sonar
+        state: stopped
       when: sonar_application_other_version.matched
 
-    - name: Move Sonar into place.
-      command: >
-        mv /usr/local/{{ sonar_version_directory }} /usr/local/sonar
-        creates=/usr/local/sonar/COPYING
-      when: sonar_install_method == 'move'
-
-    - name: Check /usr/local/sonar is a directory.
+    - name: Ensure /usr/local/sonar is a directory.
       file:
         path: /usr/local/sonar
         state: directory
-      when: (sonar_install_method == 'move' or sonar_install_method == 'copy')
-
-    - name: Copy Sonar into place.
-      shell: >
-        cp -r /usr/local/{{ sonar_version_directory }}/* /usr/local/sonar
-        creates=/usr/local/sonar/COPYING
       when: sonar_install_method == 'copy'
 
-    - name: Clean the origin of the copy.
+    - name: Look for files and folders un /usr/local/sonar/
+      find:
+        path: /usr/local/sonar
+        depth: "1"
+        file_type: any
+      register: __sonar_leftovers
+      when:
+        - sonar_install_method == 'copy'
+        - sonar_application_other_version.matched
+
+    - name: Clean /usr/local/sonar/
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{  __sonar_leftovers.files}}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+      when:
+        - sonar_install_method == 'copy'
+        - sonar_application_other_version.matched
+
+    - name: Move Sonar into place.
+      copy:
+        src: "/usr/local/{{ sonar_version_directory }}/"
+        dest: "/usr/local/sonar"
+        remote_src: true
+      when: sonar_install_method == 'copy'
+
+    - name: Clean the source folder.
       file:
         path: /usr/local/{{ sonar_version_directory }}
         state: absent
       when: sonar_install_method == 'copy'
 
+    - name: Ensure ownership of SonarQube objects.
+      file:
+        path: /usr/local/sonar
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        recurse: true
+      when: sonar_install_method == 'copy'
+
     - name: Add sonar symlink to the installed version.
       file:
-        src: /usr/local/{{ sonar_version_directory }}
+        src: "/usr/local/{{ sonar_version_directory }}"
         dest: /usr/local/sonar
         state: link
+      when: sonar_install_method == 'link'
+
+    - name: Ensure ownership of SonarQube objects.
+      file:
+        path: "/usr/local/{{ sonar_version_directory }}"
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        recurse: true
       when: sonar_install_method == 'link'
 
   when: not sonar_application_version.stat.exists
@@ -77,13 +117,6 @@
     regexp: '^#(RUN_AS_USER)='
     line: '\1={{ sonar_user }}'
     backrefs: yes
-
-- name: Ensure ownership of SonarQube objects.
-  file:
-    path: /usr/local/sonar
-    owner: "{{ sonar_user }}"
-    group: "{{ sonar_group }}"
-    recurse: true
 
 - name: Symlink sonar bin.
   file:

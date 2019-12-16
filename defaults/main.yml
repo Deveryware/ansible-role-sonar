@@ -1,5 +1,5 @@
 ---
-workspace: /root
+workspace: /tmp
 sonar_download_validate_certs: true
 
 # Default to the latest LTS release.

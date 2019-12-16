@@ -79,7 +79,6 @@
   # Do not try to call the API after an upgrade as it won't be available
   when:
     - sonar_token != ""
-    - sonar_application_version.stat.exists
 
 - name: Verify the status of community plugins.
   stat:

@@ -123,7 +123,6 @@
     src: /usr/local/sonar/bin/linux-x86-64/sonar.sh
     dest: /usr/bin/sonar
     state: link
-  register: sonar_symlink
 
 - name: Add sonar as init script for service management.
   file:
@@ -156,21 +155,65 @@
     mode: 0600
   notify: restart sonar
 
+- set_fact:
+    __sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/api"
+
+- name: Post-upgrade.
+  block:
+    - name: Start sonar after the upgrade.
+      service:
+        name: sonar
+        state: started
+
+    - name: Make sure sonar is responding on the configured port.
+      wait_for:
+        port: "9000"
+        delay: "3"
+        timeout: "300"
+
+    - name: Check if database migration is needed
+      uri:
+        url: "{{ __sonar_api_base_url }}/system/status"
+      register: __sonar_status_result
+
+    - name: Migrate database
+      uri:
+        url: "{{ __sonar_api_base_url }}/system/migrate_db"
+        method: POST
+      when:
+        - __sonar_status_result.json.status is defined
+        - __sonar_status_result.json.status == "DB_MIGRATION_NEEDED"
+
+    - name: Wait until the end of the migration
+      uri:
+        url: "{{ __sonar_api_base_url }}/system/db_migration_status"
+      register: __sonar_migrate_result
+      until: __sonar_migrate_result.json.state == "MIGRATION_SUCCEEDED" or __sonar_migrate_result.json.state == "NO_MIGRATION"
+      failed_when: __sonar_migrate_result.json.state == "MIGRATION_FAILED"
+      retries: "120"
+      delay: "5"
+      when:
+        - __sonar_status_result.json.status is defined
+        - __sonar_status_result.json.status == "DB_MIGRATION_NEEDED"
+
+    - name: Ensure Sonar is started.
+      wait_for:
+        path: /usr/local/sonar/logs/sonar.log
+        delay: 10
+        search_regex: 'SonarQube is up'
+
+  when:
+    - not sonar_application_version.stat.exists
+    - sonar_application_other_version is defined
+    - sonar_application_other_version.matched != 0
+
 - include: plugins.yml
 
 - name: Ensure Sonar is running and set to start on boot.
-  service: name=sonar state=started enabled=yes
-
-- name: Ensure Sonar is started.
-  wait_for:
-    path: /usr/local/sonar/logs/sonar.log
-    delay: 10
-    search_regex: 'Process\[web\] is up'
-  when: sonar_symlink.changed
-  tags: ['skip_ansible_lint']
-
-- name: Make sure Sonar is responding on the configured port.
-  wait_for: port=9000 delay=3 timeout=300
+  service:
+    name: sonar
+    state: started
+    enabled: yes
 
 - name: Clean workspace.
   file:

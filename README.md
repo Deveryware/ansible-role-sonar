@@ -31,7 +31,7 @@ Same thing for databases versions:
 | `sonar_user` | UNIX sonar user | `sonar` |
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
 | `sonar_version` | SonarQube version to install | `7.9` |
-| `workspace` | Temporary storage area for downloaded files | `/root` |
+| `workspace` | Temporary storage area for downloaded files | `/tmp` |
 
 ### sonar_install_method
 

@@ -1,6 +1,6 @@
 ---
 - name: Ensure {{ plugin.name }} is updated.
-  command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ __sonar_api_base_url }}/plugins/update"
+  command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ sonar_api_base_url }}/plugins/update"
   args:
     warn: false
   loop: "{{ plugin['updates'] }}"

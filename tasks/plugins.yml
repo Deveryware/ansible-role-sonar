@@ -13,7 +13,7 @@
   block:
 
   - name: Get the list of installed plugins.
-    command: "curl -s -u {{ sonar_token }}: {{ __sonar_api_base_url }}/plugins/installed"
+    command: "curl -s -u {{ sonar_token }}: {{ sonar_api_base_url }}/plugins/installed"
     args:
       warn: false
     register: installed
@@ -23,7 +23,7 @@
       installed: "{{ installed.stdout | from_json }}"
 
   - name: Ensure unwanted plugins are removed.
-    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ __sonar_api_base_url }}/plugins/uninstall"
+    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ sonar_api_base_url }}/plugins/uninstall"
     args:
       warn: false
     loop: "{{ installed['plugins'] }}"
@@ -36,7 +36,7 @@
 
   # Apparently doesn't include already installed plugins, which is neat.
   - name: Get the list of available plugins.
-    command: "curl -s -u {{ sonar_token }}: {{ __sonar_api_base_url }}/plugins/available"
+    command: "curl -s -u {{ sonar_token }}: {{ sonar_api_base_url }}/plugins/available"
     args:
       warn: false
     register: available
@@ -47,7 +47,7 @@
 
   # Beware the monster task
   - name: Ensure plugins are installed.
-    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ __sonar_api_base_url }}/plugins/install"
+    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ sonar_api_base_url }}/plugins/install"
     args:
       warn: false
     register: result
@@ -61,7 +61,7 @@
     - "plugin.name in sonar_plugins | json_query('[?state != `absent`].name')"
 
   - name: Get the list of plugins needing an update.
-    command: "curl -s -u {{ sonar_token }}: {{ __sonar_api_base_url }}/plugins/updates"
+    command: "curl -s -u {{ sonar_token }}: {{ sonar_api_base_url }}/plugins/updates"
     args:
       warn: false
     register: updates

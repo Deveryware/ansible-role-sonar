@@ -155,9 +155,6 @@
     mode: 0600
   notify: restart sonar
 
-- set_fact:
-    __sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/api"
-
 - name: Post-upgrade.
   block:
     - name: Start sonar after the upgrade.
@@ -173,12 +170,12 @@
 
     - name: Check if database migration is needed
       uri:
-        url: "{{ __sonar_api_base_url }}/system/status"
+        url: "{{ sonar_api_base_url }}/system/status"
       register: __sonar_status_result
 
     - name: Migrate database
       uri:
-        url: "{{ __sonar_api_base_url }}/system/migrate_db"
+        url: "{{ sonar_api_base_url }}/system/migrate_db"
         method: POST
       when:
         - __sonar_status_result.json.status is defined
@@ -186,7 +183,7 @@
 
     - name: Wait until the end of the migration
       uri:
-        url: "{{ __sonar_api_base_url }}/system/db_migration_status"
+        url: "{{ sonar_api_base_url }}/system/db_migration_status"
       register: __sonar_migrate_result
       until: __sonar_migrate_result.json.state == "MIGRATION_SUCCEEDED" or __sonar_migrate_result.json.state == "NO_MIGRATION"
       failed_when: __sonar_migrate_result.json.state == "MIGRATION_FAILED"

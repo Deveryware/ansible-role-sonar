@@ -23,3 +23,5 @@ sonar_configuration:
       port: 9000
     jdbc:
       url: "jdbc:mysql://localhost:3306/sonar"
+
+sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/api"

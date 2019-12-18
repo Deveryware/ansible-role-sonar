@@ -20,6 +20,7 @@ Same thing for databases versions:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `sonar_base_api_url` | URL to SonarQube API | `http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context \| default('') }}/api` |
 | `sonar_community_plugins` | List of community plugins to install. See below | `[]` |
 | `sonar_configuration` | See below | ... |
 | `sonar_download_url` | Source for SonarQube releases | `https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip` |

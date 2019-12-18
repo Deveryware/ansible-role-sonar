@@ -4,6 +4,12 @@
       - sonar_install_method == "link" or sonar_install_method == "copy"
     fail_msg: "'sonar_install_method' should be either 'copy' or 'link', not '{{ sonar_install_method }}'"
 
+- assert:
+    that:
+      - sonar_token != ""
+    fail_msg: "'sonar_token' should be defined to be able to use 'sonar_version=latest'"
+  when: sonar_version == "latest"
+
 - name: Ensure sonar group is created.
   group:
     name: "{{ sonar_group }}"
@@ -13,6 +19,36 @@
     name: "{{ sonar_user }}"
     group: "{{ sonar_group }}"
     createhome: false
+
+- block:
+    - name: Check if a new release is available
+      uri:
+        url: "{{ sonar_api_base_url }}/system/upgrades"
+        url_username: "{{ sonar_token }}"
+        url_password: ""
+        use_proxy: no
+        force_basic_auth: yes
+      register: __sonar_versions
+
+    - set_fact:
+        __sonar_versions: '{{ __sonar_versions.json.upgrades }}'
+
+    - name: Select the next release
+      set_fact:
+        __sonar_versions: '{{ __sonar_versions | sort(attribute="version") | first }}'
+      when: __sonar_versions != []
+
+    - name: Extract the file name from the download link
+      set_fact:
+        __sonar_version: "{{ __sonar_versions['downloadUrl'] | urlsplit('path') | basename | splitext | first }}"
+      when: __sonar_versions != []
+
+    - name: Extract the version number for the file name
+      set_fact:
+        sonar_version: "{{ __sonar_version.split('-') | last }}"
+      when: __sonar_versions != []
+
+  when: sonar_version == "latest"
 
 - name: Ensure Sonar application is already in the requested version.
   stat:
@@ -30,8 +66,8 @@
       unarchive:
         src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
         dest: /usr/local/
-        copy: false
-        creates: "/usr/local/{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
+        remote_src: yes
+        creates: "/usr/local/{{ sonar_version_directory }}/lib/sonar-application-{{ sonar_version }}.jar"
 
     - name: Ensure Sonar application is not already installed in another version.
       find:
@@ -52,7 +88,7 @@
         state: directory
       when: sonar_install_method == 'copy'
 
-    - name: Look for files and folders un /usr/local/sonar/
+    - name: Look for files and folders in /usr/local/sonar/
       find:
         path: /usr/local/sonar
         depth: "1"
@@ -109,7 +145,9 @@
         recurse: true
       when: sonar_install_method == 'link'
 
-  when: not sonar_application_version.stat.exists
+  when:
+    - not sonar_application_version.stat.exists
+    - sonar_version != "latest" # No newer release exists
 
 - name: Ensure sonar doesn't run as root.
   lineinfile:
@@ -202,6 +240,7 @@
   when:
     - not sonar_application_version.stat.exists
     - sonar_application_other_version is defined
+    - sonar_application_other_version.matched is defined
     - sonar_application_other_version.matched != 0
 
 - include: plugins.yml

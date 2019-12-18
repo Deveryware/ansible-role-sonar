@@ -18,7 +18,8 @@ sonar_community_plugins: []
 
 sonar_configuration:
   sonar:
-    host: 0.0.0.0
-    port: 9000
-  jdbc:
-    url: "jdbc:mysql://localhost:3306/sonar"
+    web:
+      host: 0.0.0.0
+      port: 9000
+    jdbc:
+      url: "jdbc:mysql://localhost:3306/sonar"

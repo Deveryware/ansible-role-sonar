@@ -1,11 +1,20 @@
 ---
 - name: Ensure {{ plugin.name }} is updated.
-  command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ sonar_api_base_url }}/plugins/update"
-  args:
-    warn: false
+  uri:
+    url: "{{ sonar_api_base_url }}/plugins/update"
+    url_username: "{{ sonar_token }}"
+    url_password: ""
+    use_proxy: no
+    force_basic_auth: yes
+    method: POST
+    body: "key={{ plugin.key }}"
+    body_format: form-urlencoded
+    status_code: 204
   loop: "{{ plugin['updates'] }}"
   loop_control:
     loop_var: update
     label: "{{ update['release']['version'] }}"
+  register: __sonar_plugin_operation
+  changed_when: '__sonar_plugin_operation.status == 204'
   when: "'COMPATIBLE' == update['status']"
   notify: restart sonar

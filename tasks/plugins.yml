@@ -13,70 +13,81 @@
   block:
 
   - name: Get the list of installed plugins.
-    command: "curl -s -u {{ sonar_token }}: {{ sonar_api_base_url }}/plugins/installed"
-    args:
-      warn: false
+    uri:
+      url: "{{ sonar_api_base_url }}/plugins/installed"
+      url_username: "{{ sonar_token }}"
+      url_password: ""
+      use_proxy: no
+      force_basic_auth: yes
     register: installed
-    changed_when: false
-
-  - set_fact:
-      installed: "{{ installed.stdout | from_json }}"
 
   - name: Ensure unwanted plugins are removed.
-    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ sonar_api_base_url }}/plugins/uninstall"
-    args:
-      warn: false
-    loop: "{{ installed['plugins'] }}"
+    uri:
+      url: "{{ sonar_api_base_url }}/plugins/uninstall"
+      url_username: "{{ sonar_token }}"
+      url_password: ""
+      use_proxy: no
+      force_basic_auth: yes
+      method: POST
+      body: "key={{ plugin.key }}"
+      body_format: form-urlencoded
+      status_code: 204
+    loop: "{{ installed.json['plugins'] }}"
     loop_control:
       loop_var: plugin
       label: "{{ plugin.name }}"
+    register: __sonar_plugin_operation
+    changed_when: '__sonar_plugin_operation.status == 204'
     when:
     - "plugin.name in sonar_plugins | json_query('[?state == `absent`].name')"
     notify: restart sonar
 
   # Apparently doesn't include already installed plugins, which is neat.
-  - name: Get the list of available plugins.
-    command: "curl -s -u {{ sonar_token }}: {{ sonar_api_base_url }}/plugins/available"
-    args:
-      warn: false
+  - name: Get the list of installed plugins.
+    uri:
+      url: "{{ sonar_api_base_url }}/plugins/available"
+      url_username: "{{ sonar_token }}"
+      url_password: ""
+      use_proxy: no
+      force_basic_auth: yes
     register: available
-    changed_when: false
 
-  - set_fact:
-      available: "{{ available.stdout | from_json }}"
-
-  # Beware the monster task
   - name: Ensure plugins are installed.
-    command: "curl -s -u {{ sonar_token }}: -d key={{ plugin.key }} {{ sonar_api_base_url }}/plugins/install"
-    args:
-      warn: false
-    register: result
-    changed_when: "'is already installed' not in result.stdout"
-    notify: restart sonar
-    loop: "{{ available['plugins'] }}"
+    uri:
+      url: "{{ sonar_api_base_url }}/plugins/install"
+      url_username: "{{ sonar_token }}"
+      url_password: ""
+      use_proxy: no
+      force_basic_auth: yes
+      method: POST
+      body: "key={{ plugin.key }}"
+      body_format: form-urlencoded
+      status_code: 204
+    loop: "{{ available.json['plugins'] }}"
     loop_control:
       loop_var: plugin
       label: "{{ plugin.name }}"
+    register: __sonar_plugin_operation
+    changed_when: '__sonar_plugin_operation.status == 204'
     when:
     - "plugin.name in sonar_plugins | json_query('[?state != `absent`].name')"
+    notify: restart sonar
 
   - name: Get the list of plugins needing an update.
-    command: "curl -s -u {{ sonar_token }}: {{ sonar_api_base_url }}/plugins/updates"
-    args:
-      warn: false
+    uri:
+      url: "{{ sonar_api_base_url }}/plugins/updates"
+      url_username: "{{ sonar_token }}"
+      url_password: ""
+      use_proxy: no
+      force_basic_auth: yes
     register: updates
-    changed_when: false
-
-  - set_fact:
-      updates: "{{ updates.stdout | from_json }}"
 
   - include_tasks: plugin_update.yml
-    loop: "{{ updates['plugins'] }}"
+    loop: "{{ updates.json['plugins'] }}"
     loop_control:
       loop_var: plugin
       label: "{{ plugin.name }}"
 
-  # Do not try to call the API after an upgrade as it won't be available
   when:
     - sonar_token != ""
 

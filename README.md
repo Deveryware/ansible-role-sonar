@@ -31,7 +31,7 @@ Same thing for databases versions:
 | `sonar_token` | Sonar security token, used to install plugins | `""` |
 | `sonar_user` | UNIX sonar user | `sonar` |
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
-| `sonar_version` | SonarQube version to install | `7.9` |
+| `sonar_version` | SonarQube version to install, accepts a numerical value corresponding to a known release or the special value `latest`. See below | `7.9` |
 | `workspace` | Temporary storage area for downloaded files | `/tmp` |
 
 ### sonar_install_method
@@ -148,6 +148,14 @@ sonar_community_plugins:
 ```
 
 Note that the key `url` is mandatory, even when `state=absent`.
+
+### sonar_version
+
+This variable contains the SonarQube version to install or upgrade.
+It must contains the full version number as displayed in the download link, ie: `8.1.0.31237` for versions superior to 8.0.
+
+For automatic upgrades the special value `latest` is accepted but an administrator token must configured, just like `sonar_plugins`.
+In this case the role will select the next available version using SonarQube API.
 
 ## Dependencies
 

@@ -179,6 +179,12 @@
   when: "ansible_service_mgr == 'systemd'"
   notify: Reload systemd
 
+- name: Ensure pidfile is linked in /run.
+  file:
+    src: "{{ sonar_pidfile }}"
+    dest: /run/sonar.pid
+    state: link
+
 - name: Ensure vm.max_map_count is set according to ElasticSearch's preference.
   sysctl:
     name: vm.max_map_count

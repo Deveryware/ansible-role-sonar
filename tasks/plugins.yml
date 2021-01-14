@@ -117,6 +117,9 @@
   get_url:
     url: "{{ item['plugin']['url'] }}"
     dest: /usr/local/sonar/extensions/plugins/
+    owner: "{{ sonar_user }}"
+    group: "{{ sonar_group }}"
+    mode: 0644
   when:
   - "not item['stat']['exists']"
   - "(item['plugin']['state'] is not defined or (item['plugin']['state'] is defined and item['plugin']['state'] != 'absent'))"

@@ -8,7 +8,7 @@ User={{ sonar_user }}
 ExecStart=/usr/bin/sonar start
 ExecStop=/usr/bin/sonar stop
 ExecReload=/usr/bin/sonar restart
-PIDFile=/usr/local/sonar/bin/linux-x86-64/./SonarQube.pid
+PIDFile={{ sonar_pidfile }}
 Type=simple
 LimitNOFILE=65536
 

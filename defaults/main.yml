@@ -9,6 +9,7 @@ sonar_version_directory: "sonarqube-{{ sonar_version }}"
 
 sonar_user: sonar
 sonar_group: "{{ sonar_user }}"
+sonar_pidfile: '/usr/local/sonar/bin/linux-x86-64/./SonarQube.pid'
 
 # Default: copy - Values: copy, link
 sonar_install_method: "copy"

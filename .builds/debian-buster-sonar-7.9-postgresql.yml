@@ -1,0 +1,66 @@
+image: debian/buster
+packages:
+  - unzip
+  - python3-pip
+  - python-apt
+  - openjdk-11-jdk
+  - acl
+sources:
+  - https://github.com/Deveryware/ansible-role-sonar
+tasks:
+  - pip: |
+      sudo pip3 -q install ansible
+  - setup: |
+      echo "Creating roles/ directory"
+      mkdir roles
+      mv ansible-role-sonar roles/
+      echo "Creating ansible.cfg"
+      cat <<EOD > ansible.cfg
+      [defaults]
+      stdout_callback = yaml
+      roles_path = roles
+      EOD
+      echo "Creating inventory"
+      cat <<EOD > inventory
+      [all]
+      localhost
+      EOD
+      echo "Creating requirements.yml"
+      cat <<EOD > requirements.yml
+      ---
+      - src: https://github.com/geerlingguy/ansible-role-postgresql.git
+      EOD
+      echo "Running ansible-galaxy"
+      /usr/local/bin/ansible-galaxy install -p roles -r requirements.yml
+      echo "Creating playbook.yml"
+      cat <<EOD > playbook.yml
+      ---
+      - hosts: all
+        connection: local
+        roles:
+          - role: ansible-role-postgresql
+          - role: ansible-role-sonar
+      EOD
+      echo "Creating group_vars/ directory"
+      mkdir group_vars
+      cat <<EOD > group_vars/all.yml
+      ---
+      sonar_version: 7.9
+      sonar_configuration:
+        sonar:
+          web:
+            host: 0.0.0.0
+            port: 9000
+          jdbc:
+            username: sonar
+            password: sonar
+            url: "jdbc:postgresql://localhost/sonar"
+      postgresql_databases:
+      - name: sonar
+        owner: sonar
+      postgresql_users:
+      - name: sonar
+        password: sonar
+      EOD
+  - run: |
+      /usr/local/bin/ansible-playbook -b -i inventory playbook.yml

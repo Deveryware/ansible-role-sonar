@@ -184,6 +184,7 @@
     src: "{{ sonar_pidfile }}"
     dest: /run/sonar.pid
     state: link
+    force: yes
 
 - name: Ensure vm.max_map_count is set according to ElasticSearch's preference.
   sysctl:

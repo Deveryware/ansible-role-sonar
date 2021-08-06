@@ -28,6 +28,7 @@ Same thing for databases versions:
 | `sonar_group` | UNIX sonar group | `sonar` |
 | `sonar_install_method` | See below | `copy` |
 | `sonar_plugins` | List of official plugins to intsall. See below | `[]` |
+| `sonar_tmp_dest` | Absolute path of where temporary file is downloaded to. | path defaults to ansible's remote_tmp setting |
 | `sonar_token` | Sonar security token, used to install plugins | `""` |
 | `sonar_user` | UNIX sonar user | `sonar` |
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |

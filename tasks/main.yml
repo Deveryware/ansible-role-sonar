@@ -241,7 +241,7 @@
 
     - name: Ensure Sonar is started.
       wait_for:
-        path: /usr/local/sonar/logs/sonar.log
+        path: "/usr/local/sonar/logs/sonar.{{ ansible_facts.ansible_date_time.year}}{{ ansible_facts.ansible_date_time.month}}{{ ansible_facts.ansible_date_time.day}}.log"
         delay: 10
         search_regex: 'SonarQube is up'
 

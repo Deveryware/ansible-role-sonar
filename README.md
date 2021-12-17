@@ -32,7 +32,7 @@ Same thing for databases versions:
 | `sonar_token` | Sonar security token, used to install plugins | `""` |
 | `sonar_user` | UNIX sonar user | `sonar` |
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
-| `sonar_version` | SonarQube version to install, accepts a numerical value corresponding to a known release or the special value `latest`. See below | `7.9` |
+| `sonar_version` | SonarQube version to install, accepts a numerical value corresponding to a known release or the special value `latest`. See below | `8.9` |
 | `workspace` | Temporary storage area for downloaded files | `/tmp` |
 
 ### sonar_install_method
@@ -178,7 +178,7 @@ A role dedicated to the configuration of java, such as:
     - ansible-role-mysql
     - ansible-role-java
     - ansible-role-sonar
-      sonar_version: 7.7
+      sonar_version: 8.9.2.46101
 ```
 
 or

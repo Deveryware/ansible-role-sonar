@@ -3,7 +3,7 @@ workspace: /tmp
 sonar_download_validate_certs: true
 
 # Default to the latest LTS release.
-sonar_version: "7.9"
+sonar_version: "8.9"
 sonar_download_url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip"
 sonar_version_directory: "sonarqube-{{ sonar_version }}"
 
@@ -25,4 +25,4 @@ sonar_configuration:
     jdbc:
       url: "jdbc:mysql://localhost:3306/sonar"
 
-sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/web_api/api"
+sonar_api_base_url: "http://localhost:{{ sonar_configuration.sonar.web.port }}{{ sonar_configuration.sonar.web.context | default('') }}/api"

@@ -3,7 +3,7 @@ workspace: /tmp
 sonar_download_validate_certs: true
 
 # Default to the latest LTS release.
-sonar_version: "8.9"
+sonar_version: "9.9"
 sonar_download_url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip"
 sonar_version_directory: "sonarqube-{{ sonar_version }}"
 

@@ -243,7 +243,7 @@
       wait_for:
         path: "/usr/local/sonar/logs/sonar.log"
         delay: 10
-        search_regex: 'SonarQube is operational '
+        search_regex: 'SonarQube is operational'
 
   when:
     - not sonar_application_version.stat.exists

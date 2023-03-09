@@ -9,6 +9,7 @@ Requires the `unzip` utility to be installed on the server. Also, different Sona
   - SonarQube 5.0-5.5 requires Java 7+
   - SonarQube 5.6-7.8 requires Java 8+
   - SonarQube 7.9+ requires Java 11+
+  - Sonarqube 9.9+ requires Java 17+
 
 Same thing for databases versions:
 

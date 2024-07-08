@@ -251,7 +251,7 @@
     - sonar_application_other_version.matched is defined
     - sonar_application_other_version.matched != 0
 
-- include: plugins.yml
+- include.builtin.include_tasks: plugins.yml
 
 - name: Ensure Sonar is running and set to start on boot.
   service:

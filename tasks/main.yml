@@ -19,6 +19,7 @@
     name: "{{ sonar_user }}"
     group: "{{ sonar_group }}"
     createhome: false
+    home: /usr/local/sonar
 
 - block:
     - name: Check if a new release is available
@@ -191,6 +192,27 @@
   sysctl:
     name: vm.max_map_count
     value: "262144"
+
+- name: Prepare directory for sonar encryption key if provided
+  file:
+    dest: /usr/local/sonar/.sonar
+    state: directory
+    owner: sonar
+    group: sonar
+    mode: 0700
+  when:
+    - sonar_secret_key is defined
+    - sonar_secret_key != ""
+  notify: restart sonar
+
+- name: Configure sonar encryption key if provided
+  copy:
+    content: "{{ sonar_secret_key }}"
+    dest: /usr/local/sonar/.sonar/sonar-secret.txt
+  when:
+    - sonar_secret_key is defined
+    - sonar_secret_key != ""
+  notify: restart sonar
 
 - name: Ensure Sonar configuration file is installed
   template:

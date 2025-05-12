@@ -29,6 +29,7 @@ Same thing for databases versions:
 | `sonar_group` | UNIX sonar group | `sonar` |
 | `sonar_install_method` | See below | `copy` |
 | `sonar_plugins` | List of official plugins to intsall. See below | `[]` |
+| `sonar_secret_key` | Sonar secret key, used to encrypt passwords | `""` |
 | `sonar_tmp_dest` | Absolute path of where temporary file is downloaded to. | [`tmp_dest`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html)'s default |
 | `sonar_token` | Sonar security token, used to install plugins | `""` |
 | `sonar_user` | UNIX sonar user | `sonar` |

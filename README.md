@@ -36,6 +36,7 @@ Same thing for databases versions:
 | `sonar_version_directory` | Name of the installation directory | `sonarqube-{{ sonar_version }}` |
 | `sonar_version` | SonarQube version to install, accepts a numerical value corresponding to a known release or the special value `latest`. See below | `8.9` |
 | `workspace` | Temporary storage area for downloaded files | `/tmp` |
+| `sonar_unzip_tmp_dest` | Temporary storage area to unzip downloaded sonar files before moving them into place | `/usr/local` |
 
 ### sonar_install_method
 

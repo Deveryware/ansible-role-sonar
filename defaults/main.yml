@@ -1,6 +1,7 @@
 ---
 workspace: /tmp
 sonar_download_validate_certs: true
+sonar_unzip_tmp_dest: /usr/local
 
 # Default to the latest LTS release.
 sonar_version: "9.9"
